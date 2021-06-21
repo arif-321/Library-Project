@@ -1,13 +1,16 @@
 package com.rahulshettyacademy;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import com.rahulshettyacademy.controller.AddResponse;
 import com.rahulshettyacademy.controller.Library;
 import com.rahulshettyacademy.controller.LibraryController;
 import com.rahulshettyacademy.repository.Storage2;
@@ -37,15 +40,25 @@ public void checkBuildIDLogic()
 	String id = lib.buildId("ZMAN", 24);
 	assertEquals(id,"OLDZMAN24");
 	
-	String id1 = lib.buildId("MAN", 24);
-	assertEquals(id,"ZMAN24");
+//	String id1 = lib.buildId("MAN", 24);
+//	assertEquals(id,"MAN24");
 }
 
 @Test
 public void addBookTest()
 {
+	//mock
+	Library lib= buildLibrary();
+	when(libraryService.buildId(lib.getIsbn(),lib.getAisle())).thenReturn(lib.getId());
+	when(libraryService.checkBookAlreadyExist(lib.getId())).thenReturn(false);
+	
 	ResponseEntity response = con.addBookImplementation(buildLibrary());
-	System.out.println(response.getStatusCode());  
+	System.out.println(response.getStatusCode()); 
+	assertEquals(response.getStatusCode(),HttpStatus.CREATED);
+	AddResponse ad = (AddResponse) response.getBody();
+	ad.getId();
+	assertEquals(lib.getId(),ad.getId());
+	assertEquals("Success book is added",ad.getMsg());
 
 }
 
